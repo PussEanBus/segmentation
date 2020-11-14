@@ -55,6 +55,7 @@ IMG_CHANNEL = 3
 CLASSES = ["Background", "Person"]
 N_CLASSES = 2
 TEST_IMAGE_PATH = os.path.join(BASE_DIR, 'image_test', '1.png')
+OUTPUT_IMAGE_PATH = os.path.join(BASE_DIR, 'image_test', 'output.png')
 
 # Model
 WEIGHT_FILE_PATH = os.path.join(BASE_DIR, 'weights', 'best_weights_4_all.h5')
@@ -70,6 +71,12 @@ model.load_weights(WEIGHT_FILE_PATH)
 # Predict
 @app.route("/predict")
 def predict():
+    return 'hello'
+
+
+# ------------------ Helper functions --------------------- #
+
+def test():
     # Get and preprocess image
     img_origin = cv2.imread(TEST_IMAGE_PATH)
     img_resize = cv2.resize(img_origin, (224, 224))[..., ::-1]
@@ -78,7 +85,7 @@ def predict():
     # Predict
     prediction = model.predict(img)
     prediction = prediction[0]
-    print(prediction)
+    # print(prediction)
 
     # Mask
     mask = np.reshape(prediction, (IMG_HEIGHT, IMG_WIDTH, N_CLASSES))
@@ -102,10 +109,11 @@ def predict():
 
     # Return value
     cv2.imshow('', new_img)
-    return 'hello'
+    cv2.imwrite(OUTPUT_IMAGE_PATH, new_img)
 
 
 # ------------------ Main --------------------- #
 
 if __name__ == '__main__':
-    app.run(host=HOST, port=PORT, debug=DEBUG)
+    # app.run(host=HOST, port=PORT, debug=DEBUG)
+    test()
