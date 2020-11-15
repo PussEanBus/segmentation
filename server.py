@@ -30,8 +30,8 @@ import imgaug as ia
 from imgaug import augmenters as iaa
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, BaseLogger
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
-
-
+from datagenerator import DataGenerator
+from dataaugentation import DataAugmentation
 # ------------------ General config --------------------- #
 
 warnings.filterwarnings("ignore")
@@ -53,6 +53,9 @@ IMG_HEIGHT = 224
 IMG_WIDTH = 224
 IMG_CHANNEL = 3
 CLASSES = ["Background", "Person"]
+DATA_DIR = 'Nukki'
+VAL_ANNO_FILE1 = os.path.join(DATA_DIR, "baidu_V1/val.txt")
+VAL_ANNO_FILE2 = os.path.join(DATA_DIR, "baidu_V2/val.txt")
 N_CLASSES = 2
 TEST_IMAGE_PATH = os.path.join(BASE_DIR, 'image_test', '1.png')
 OUTPUT_IMAGE_PATH = os.path.join(BASE_DIR, 'image_test', 'output.png')
@@ -65,6 +68,10 @@ sinet = SiNet(IMG_HEIGHT, IMG_WIDTH, IMG_CHANNEL, N_CLASSES)
 model = sinet.build_decoder()
 model.load_weights(WEIGHT_FILE_PATH)
 
+# data loader
+data_aug = DataAugmentation()
+aug = data_aug._load_aug_by_name()
+val_datagen = DataGenerator(DATA_DIR, [VAL_ANNO_FILE1, VAL_ANNO_FILE2], aug, batch_size=24)
 
 # ------------------ API --------------------- #
 
@@ -78,9 +85,13 @@ def predict():
 
 def test():
     # Get and preprocess image
-    img_origin = cv2.imread(TEST_IMAGE_PATH)
+    img_origin = val_datagen.load_image(TEST_IMAGE_PATH)
+    preprocessors = [val_datagen.resize_img, val_datagen.mean_substraction]
+
     img_resize = cv2.resize(img_origin, (224, 224))[..., ::-1]
-    img = np.expand_dims(img_resize, axis=0)
+    img_preprocess = val_datagen.preprocessing(img_origin, preprocessors=preprocessors)
+
+    img = np.expand_dims(img_preprocess, axis=0)
 
     # Predict
     prediction = model.predict(img)
