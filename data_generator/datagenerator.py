@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 import cv2
+import imgaug as ia
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 from sklearn.utils import shuffle
 
@@ -31,7 +32,7 @@ class DataGenerator:
         self.batch_size = batch_size
         self.task = task
         self.current_index = 0
-#         self.current_test = 0
+        # self.current_test = 0
         self.img_height = img_height
         self.img_width = img_width
         self.img_channel = img_channel
@@ -69,7 +70,7 @@ class DataGenerator:
     def load_image(self, img_path):
         image = cv2.imread(img_path, 1)
         image = image[..., ::-1]
-#         print(len(np.unique(image[..., 0])))
+        # print(len(np.unique(image[..., 0])))
         return image
 
     def load_images(self, image_paths):
@@ -90,7 +91,7 @@ class DataGenerator:
         for lbl_path in label_paths:
             label = self.load_image(lbl_path)
             label = self.resize_img(label, interpolation=cv2.INTER_NEAREST)
-            label = label /255
+            label = label / 255
             label[label < 0.5] = 0
             label[label >= 0.5] = 1
             label = self.parse_label(label)
@@ -118,14 +119,14 @@ class DataGenerator:
         
         for i in range(len(img_paths)):
             image = self.load_image(img_paths[i])
-#             image = self.preprocessing(image, preprocessors)
+            # image = self.preprocessing(image, preprocessors)
             
             seg = self.load_image(label_paths[i])
-#             seg = self.preprocessing(seg, [self.resize_img])
-#             print(seg.dtype)
-#             seg = seg.astype(np.uint8)
-#             seg = self.parse_label(seg)
-#             seg = np.argmax(seg, axis=-1).astype(np.int32)
+            # seg = self.preprocessing(seg, [self.resize_img])
+            # print(seg.dtype)
+            # seg = seg.astype(np.uint8)
+            # seg = self.parse_label(seg)
+            # seg = np.argmax(seg, axis=-1).astype(np.int32)
             segmap = SegmentationMapsOnImage(seg[:, :, 0], shape=image.shape, nb_classes=np.max(seg[:, :, 0]) + 1)
             
             if self.augmentation:
@@ -136,7 +137,7 @@ class DataGenerator:
             
 #             seg = self.preprocessing(seg, [self.resize_img])
             seg = self.resize_img(seg, interpolation=cv2.INTER_NEAREST)
-            seg = seg /255
+            seg = seg / 255
             seg[seg > 0.5] = 1
             seg[seg <= 0.5] = 0
             seg = self.parse_label(seg)
@@ -153,7 +154,7 @@ class DataGenerator:
         
         img = self.load_image(img_path)
         seg = self.load_image(seg_path)
-#         segmap = SegmentationMapsOnImage(seg[..., 0], shape=img.shape)
+        # segmap = SegmentationMapsOnImage(seg[..., 0], shape=img.shape)
         segmap = SegmentationMapsOnImage(seg, shape=img.shape)
         
         img_aug, seg_aug = self.augment_func(image=img, segmentation_maps=segmap)
@@ -163,20 +164,20 @@ class DataGenerator:
             seg
         ]))
         
-#         seg[..., 0] = seg_aug.get_arr_int()
+        # seg[..., 0] = seg_aug.get_arr_int()
         seg = seg_aug.get_arr_int()
-#         print(np.nonzero(seg[..., 0]))
+        # print(np.nonzero(seg[..., 0]))
 
-#         non_index = np.nonzero(seg[..., 0])
-#         for i in range(len(non_index[0])):
-#             print(seg[..., 0][non_index[0][i], non_index[1][i]])
+        # non_index = np.nonzero(seg[..., 0])
+        # for i in range(len(non_index[0])):
+        #     print(seg[..., 0][non_index[0][i], non_index[1][i]])
 
         ia.imshow(np.hstack([
             img_aug[..., ::-1],
             seg
         ]))
         
-        seg = seg /255
+        seg = seg / 255
         seg[seg < 0.5] = 0
         seg[seg >= 0.5] = 1
         
@@ -186,22 +187,24 @@ class DataGenerator:
         ]))
     
     def resize_img(self, image, interpolation=cv2.INTER_AREA):
-#         h, w = image.shape[:2]
-#         print(h, w)
-#         p_h, p_w = 0, 0
-        
-#         if h>w:
-#             image = imutils.resize(image, width=self.img_width)
-#             p_h = int((image.shape[0] - self.img_height) / 2)
-#         else:
-#             image = imutils.resize(image, height=self.img_height)
-#             p_w = int((image.shape[1] - self.img_width) / 2)
-        
-#         image = image[p_w:image.shape[1]-p_w, p_h: image.shape[0]-p_h]
+        # h, w = image.shape[:2]
+        # print(h, w)
+        # p_h, p_w = 0, 0
+        #
+        # if h>w:
+        #     image = imutils.resize(image, width=self.img_width)
+        #     p_h = int((image.shape[0] - self.img_height) / 2)
+        # else:
+        #     image = imutils.resize(image, height=self.img_height)
+        #     p_w = int((image.shape[1] - self.img_width) / 2)
+        #
+        # image = image[p_w:image.shape[1]-p_w, p_h: image.shape[0]-p_h]
         image = cv2.resize(image, (self.img_height, self.img_width), interpolation=interpolation)
         return image
     
-    def mean_substraction(self, image, mean=[103.94, 116.78, 123.68], image_val=0.017):
+    def mean_substraction(self, image, mean=None, image_val=0.017):
+        if mean is None:
+            mean = [103.94, 116.78, 123.68]
         image = image.astype("float32")
         image[:, :, 0] -= mean[0]
         image[:, :, 1] -= mean[1]

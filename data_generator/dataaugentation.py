@@ -1,5 +1,6 @@
 from imgaug import augmenters as iaa
 
+
 class DataAugmentation:
     def __init__(self):
         self.IMAGE_AUGMENTATION_SEQUENCE = None
@@ -7,12 +8,13 @@ class DataAugmentation:
         self.loaded_augmentation_name = ""
     
         self.augmentation_functions = {
-            "aug_all": self._load_augmentation_aug_all,
-            "aug_geometric": self._load_augmentation_aug_geometric,
-            "aug_non_geometric": self._load_augmentation_aug_non_geometric,
+            "aug_all": self.load_augmentation_aug_all,
+            "aug_geometric": self.load_augmentation_aug_geometric,
+            "aug_non_geometric": self.load_augmentation_aug_non_geometric,
         }
-    
-    def _load_augmentation_aug_geometric(self):
+
+    @staticmethod
+    def load_augmentation_aug_geometric():
         return iaa.Sequential([
             iaa.Sometimes(0.5, iaa.Fliplr()),
             iaa.Sometimes(0.5, iaa.Rotate((-45, 45))),
@@ -29,8 +31,9 @@ class DataAugmentation:
                 cval=(0, 255),
             )),
         ])
-    
-    def _load_augmentation_aug_non_geometric(self):
+
+    @staticmethod
+    def load_augmentation_aug_non_geometric():
         return iaa.Sequential([
             iaa.Sometimes(0.5, iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, 0.05*255), per_channel=0.5)),
             iaa.Sometimes(0.5, iaa.OneOf([
@@ -45,13 +48,13 @@ class DataAugmentation:
             iaa.Sometimes(0.5, iaa.LinearContrast((0.4, 1.7), per_channel=0.5))
         ])
     
-    def _load_augmentation_aug_all(self):
+    def load_augmentation_aug_all(self):
         return iaa.OneOf([
-            iaa.Sometimes(0.5, self._load_augmentation_aug_geometric()),
-            iaa.Sometimes(0.5, self._load_augmentation_aug_non_geometric())
+            iaa.Sometimes(0.5, self.load_augmentation_aug_geometric()),
+            iaa.Sometimes(0.5, self.load_augmentation_aug_non_geometric())
         ])
     
-    def _load_aug_by_name(self, aug_name="aug_all"):
+    def load_aug_by_name(self, aug_name="aug_all"):
         if not len(self.loaded_augmentation_name):
             self.loaded_augmentation_name = aug_name
             self.IMAGE_AUGMENTATION_SEQUENCE = self.augmentation_functions[aug_name]()

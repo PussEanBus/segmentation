@@ -1,29 +1,14 @@
-import os
-import sys
-import warnings
-warnings.filterwarnings("ignore")
-
 import numpy as np
 from keras.layers import (
     Conv2D, BatchNormalization, Dense, 
     ZeroPadding2D, Activation, GlobalAveragePooling2D,
-    Reshape, Permute, multiply, AveragePooling2D,
+    Reshape, multiply, AveragePooling2D,
     UpSampling2D, Concatenate, Add, Lambda, Multiply
 )
-from keras.models import Model, Sequential
+from keras.models import Model
 from keras.layers import Input
 import keras.backend as K
 from keras.layers import DepthwiseConv2D, PReLU
-import cv2
-from glob import glob
-import pandas as pd
-from sklearn.utils import shuffle
-import imgaug as ia
-from imgaug import augmenters as iaa
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler, BaseLogger
-from imgaug.augmentables.segmaps import SegmentationMapsOnImage
-from tensorflow.python.client import device_lib
-import tensorflow as tf
 from keras.regularizers import l2
 
 IMG_HEIGHT = 224
@@ -32,6 +17,7 @@ IMG_CHANNEL = 3
 CLASSES = ["Background", "Person"]
 N_CLASSES = 2
 IMAGE_DATA_FORMAT = K.image_data_format()
+
 
 class SiNet:
     def __init__(self, img_height, img_width, img_channel, n_classes, reg=1e-4):
@@ -102,7 +88,7 @@ class SiNet:
                             name="conv_dw_%s" % block_id)(x)
         x = BatchNormalization(axis=self.channel_axis,
                                name="conv_dw_%s_bn" % block_id)(x)
-#         x = Activation("PReLu", name="conv_dw_%d_Prelu" % block_id)(x)
+        # x = Activation("PReLu", name="conv_dw_%d_Prelu" % block_id)(x)
         x = PReLU(name="conv_dw_%s_Prelu" % block_id)(x)
         
         x = self._pointwise_conv_block(x, pointwise_conv_filters, self.alpha, block_id=block_id)
@@ -110,7 +96,6 @@ class SiNet:
         return x
     
     def _squeeze_excite_block(self, inputs, ratio=16, block_id=1):
-        """"""
         filters = inputs.shape[self.channel_axis]
         se_shape = (1, 1, filters) if self.channel_axis == -1 else (filters, 1, 1)
         
@@ -130,13 +115,13 @@ class SiNet:
     
     def _depthwise_conv_se_block(self, inputs, pointwise_conv_filters, alpha, 
                                  depth_multiplier=1, strides=(2, 2), block_id=1,
-                                 kernel=(3,3), ratio=16):
+                                 kernel=(3, 3), ratio=16):
         """
         DS-Conv + SE
         """
         x = self._depthwise_conv_block(inputs, pointwise_conv_filters, alpha, 
                                        block_id=block_id, strides=strides)
-#         x = Activation("relu")(x)
+        # x = Activation("relu")(x)
         x = self._squeeze_excite_block(x, ratio=ratio, block_id=block_id)
         x = Activation("relu")(x)
         
@@ -177,7 +162,7 @@ class SiNet:
         
         x = Concatenate(axis=self.channel_axis)([x1, x2])
         x = Add()([inputs, x])
-#         x = BatchNormalization(axis=self.channel_axis)(x)
+        # x = BatchNormalization(axis=self.channel_axis)(x)
         x = PReLU()(x)
         
         return x
@@ -201,7 +186,7 @@ class SiNet:
             x = Lambda(lambda z: (z - np.array(self.mean_substraction))*self.image_val,
                        output_shape=input_shape,
                        name="mean_substraction_inputs")(x)
-#         x = inputs
+        # x = inputs
 
         x1 = self._conv_block(x, 12, self.alpha, strides=(2, 2), block_id=1)
         x2 = self._depthwise_conv_se_block(x1, 16, self.alpha, block_id=2)
@@ -236,16 +221,16 @@ class SiNet:
         x17 = Activation("relu")(x17)
         
         x = self._pointwise_conv_block(x17, N_CLASSES, self.alpha, block_id=16)
-#         x8_pws = self._pointwise_conv_block(x8, N_CLASSES, self.alpha, block_id=17)
-#         x = Add(name="x8_xlast_adding")([x8_pws, x])
+        # x8_pws = self._pointwise_conv_block(x8, N_CLASSES, self.alpha, block_id=17)
+        # x = Add(name="x8_xlast_adding")([x8_pws, x])
         x = Activation("relu")(x)
-#         x = Activation("relu")(x)
+        # x = Activation("relu")(x)
         
-#         x = Reshape((-1, self.n_classes))(x)
+        # x = Reshape((-1, self.n_classes))(x)
+
+        # x = Activation("softmax")(x)
         
-#         x = Activation("softmax")(x)
-        
-#         model = Model(inputs=inputs, outputs=x)
+        # model = Model(inputs=inputs, outputs=x)
         
         return inputs, x, x8, x5, x1
     
@@ -271,9 +256,9 @@ class SiNet:
         x = BatchNormalization(axis=self.channel_axis)(x)
         x = Activation("relu")(x)
         x = self._conv_block(x, self.n_classes, self.alpha, kernel=(1, 1), padding="same", block_id=19)
-#         x1_pws = self._pointwise_conv_block(x1, self.n_classes, self.alpha, block_id=20, strides=(1, 1))
-#         x = Add()([x1_pws, x])
-#         x = Activation("relu")(x)
+        # x1_pws = self._pointwise_conv_block(x1, self.n_classes, self.alpha, block_id=20, strides=(1, 1))
+        # x = Add()([x1_pws, x])
+        # x = Activation("relu")(x)
         x = UpSampling2D((2, 2), interpolation="bilinear")(x)
         x = BatchNormalization(axis=self.channel_axis)(x)
         x = Activation("relu")(x)

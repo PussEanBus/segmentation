@@ -1,11 +1,8 @@
 # Segmentation server
 
-### Deployment
-Location: (maybe Heroku)
-Used for back-end only, handling API.
-
 ### Local testing
 Require Python 3
+- Download ```Nukki``` folder from ```https://drive.google.com/drive/folders/1rM5A1IXpXXK2OUT9r0CJIyYAg1YlMtPg```
 - Install requirements:
     ```pip install -r requirements.txt```
 - Run:

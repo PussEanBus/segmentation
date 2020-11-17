@@ -22,3 +22,9 @@ htmlcov/
 .coverage
 .coverage.*
 *,cover
+
+# Uploads
+uploads/*
+
+# Image loader
+Nukki/
