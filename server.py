@@ -14,8 +14,8 @@ from model import SiNet
 import numpy as np
 import keras.backend as K
 import cv2
-from data_generator.datagenerator import DataGenerator
-from data_generator.dataaugentation import DataAugmentation
+# from data_generator.datagenerator import DataGenerator
+# from data_generator.dataaugentation import DataAugmentation
 
 
 # ------------------ General config --------------------- #
@@ -30,9 +30,11 @@ HOST = '0.0.0.0'
 PORT = 5000
 DEBUG = True
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
+OUTPUT_FOLDER = os.path.join(BASE_DIR, 'outputs')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 CORS(app)
 
@@ -59,38 +61,44 @@ model = sinet.build_decoder()
 model.load_weights(WEIGHT_FILE_PATH)
 
 # data loader
-data_aug = DataAugmentation()
-aug = data_aug.load_aug_by_name()
-val_datagen = DataGenerator(DATA_DIR, [VAL_ANNO_FILE1, VAL_ANNO_FILE2], aug, batch_size=24)
+# data_aug = DataAugmentation()
+# aug = data_aug.load_aug_by_name()
+# val_datagen = DataGenerator(DATA_DIR, [VAL_ANNO_FILE1, VAL_ANNO_FILE2], aug, batch_size=24)
 
 
 # ------------------ API --------------------- #
 
 # Predict
-@app.route("/predict")
+@app.route('/predict', methods=['POST'])
 def predict():
-    return 'hello'
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+    file = request.files['file']
+
+    # if user does not select file, browser also submit an empty part without filename
+    if file.filename == '':
+        flash('No selected file')
+        return redirect('/')
+
+    if file and allowed_file(file.filename):
+        # Save uploaded file
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+
+        # Predict
+        output_file, output_file_path = predict_image(filepath, filename)
+
+        return redirect(url_for('generated_file', filename=output_file))
+
+    # flash('Invalid')
+    # return redirect('/')
+    return 'Invalid request', 400
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def upload_file():
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-            return redirect(url_for('uploaded_file', filename=filename))
     return render_template('index.html')
 
 
@@ -99,21 +107,29 @@ def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 
+@app.route('/outputs/<filename>')
+def generated_file(filename):
+    return send_from_directory(OUTPUT_FOLDER, filename)
+
+
 # ------------------ Helper functions --------------------- #
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def test():
+def predict_image(file_path, file_name):
+    img_origin = cv2.imread(file_path)
+
     # Get and preprocess image
-    img_origin = val_datagen.load_image(TEST_IMAGE_PATH)
-    preprocessors = [val_datagen.resize_img, val_datagen.mean_substraction]
+    # img_origin = val_datagen.load_image(file_path)
+    # preprocessors = [val_datagen.resize_img, val_datagen.mean_substraction]
 
     img_resize = cv2.resize(img_origin, (224, 224))[..., ::-1]
-    img_preprocess = val_datagen.preprocessing(img_origin, preprocessors=preprocessors)
+    # img_preprocess = val_datagen.preprocessing(img_origin, preprocessors=preprocessors)
 
-    img = np.expand_dims(img_preprocess, axis=0)
+    # img = np.expand_dims(img_preprocess, axis=0)
+    img = np.expand_dims(img_resize, axis=0)
 
     # Predict
     prediction = model.predict(img)
@@ -141,12 +157,13 @@ def test():
     new_img = cv2.resize(new_img, (512, 512))
 
     # Return value
-    cv2.imshow('', new_img)
-    cv2.imwrite(OUTPUT_IMAGE_PATH, new_img)
+    # cv2.imshow('', new_img)
+    output_file_path = os.path.join(OUTPUT_FOLDER, file_name)
+    cv2.imwrite(output_file_path, new_img)
+    return file_name, output_file_path
 
 
 # ------------------ Main --------------------- #
 
 if __name__ == '__main__':
     app.run(host=HOST, port=PORT, debug=DEBUG)
-    # test()

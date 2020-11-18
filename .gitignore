@@ -23,8 +23,9 @@ htmlcov/
 .coverage.*
 *,cover
 
-# Uploads
+# Image upload and output
 uploads/*
+outputs/*
 
 # Image loader
 Nukki/
