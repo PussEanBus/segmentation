@@ -14,8 +14,8 @@ from model import SiNet
 import numpy as np
 import keras.backend as K
 import cv2
-# from data_generator.datagenerator import DataGenerator
-# from data_generator.dataaugentation import DataAugmentation
+from data_generator.datagenerator import DataGenerator
+from data_generator.dataaugentation import DataAugmentation
 
 
 # ------------------ General config --------------------- #
@@ -61,9 +61,9 @@ model = sinet.build_decoder()
 model.load_weights(WEIGHT_FILE_PATH)
 
 # data loader
-# data_aug = DataAugmentation()
-# aug = data_aug.load_aug_by_name()
-# val_datagen = DataGenerator(DATA_DIR, [VAL_ANNO_FILE1, VAL_ANNO_FILE2], aug, batch_size=24)
+data_aug = DataAugmentation()
+aug = data_aug.load_aug_by_name()
+val_datagen = DataGenerator(DATA_DIR, [VAL_ANNO_FILE1, VAL_ANNO_FILE2], aug, batch_size=24)
 
 
 # ------------------ API --------------------- #
@@ -122,14 +122,14 @@ def predict_image(file_path, file_name):
     img_origin = cv2.imread(file_path)
 
     # Get and preprocess image
-    # img_origin = val_datagen.load_image(file_path)
-    # preprocessors = [val_datagen.resize_img, val_datagen.mean_substraction]
+    img_origin = val_datagen.load_image(file_path)
+    preprocessors = [val_datagen.resize_img, val_datagen.mean_substraction]
 
     img_resize = cv2.resize(img_origin, (224, 224))[..., ::-1]
-    # img_preprocess = val_datagen.preprocessing(img_origin, preprocessors=preprocessors)
+    img_preprocess = val_datagen.preprocessing(img_origin, preprocessors=preprocessors)
 
-    # img = np.expand_dims(img_preprocess, axis=0)
-    img = np.expand_dims(img_resize, axis=0)
+    img = np.expand_dims(img_preprocess, axis=0)
+    # img = np.expand_dims(img_resize, axis=0)
 
     # Predict
     prediction = model.predict(img)

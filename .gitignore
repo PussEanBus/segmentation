@@ -25,7 +25,9 @@ htmlcov/
 
 # Image upload and output
 uploads/*
+!uploads/.gitkeep
 outputs/*
+!outputs/.gitkeep
 
 # Image loader
 Nukki/
