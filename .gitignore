@@ -29,5 +29,3 @@ uploads/*
 outputs/*
 !outputs/.gitkeep
 
-# Image loader
-Nukki/

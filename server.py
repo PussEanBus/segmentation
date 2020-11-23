@@ -142,11 +142,14 @@ def predict_image(file_path, file_name):
     mask[mask > 0] = 255
 
     new_img = np.copy(img_resize)
+    print(new_img.shape)
     non_zeros_idx = np.where(mask == 0)
     #     non_zeros_idx = np.nonzero()
     new_img[..., 0][non_zeros_idx] = 0
     new_img[..., 1][non_zeros_idx] = 0
     new_img[..., 2][non_zeros_idx] = 0
+    new_img[np.all(new_img == (0, 0, 0), axis=-1)] = (244,118,0)
+
 
     #     print(mask)
     #     for i in range(N_CLASSES):
