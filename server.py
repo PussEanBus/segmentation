@@ -16,6 +16,11 @@ import keras.backend as K
 import cv2
 from data_generator.datagenerator import DataGenerator
 from data_generator.dataaugentation import DataAugmentation
+from unet import get_mobile_unet
+from PIL import Image
+import scipy.misc
+import matplotlib.image as mpimg
+
 
 
 # ------------------ General config --------------------- #
@@ -59,6 +64,8 @@ sinet = SiNet(IMG_HEIGHT, IMG_WIDTH, IMG_CHANNEL, N_CLASSES)
 model = sinet.build_decoder()
 model.load_weights(WEIGHT_FILE_PATH)
 
+# unet
+unet = get_mobile_unet(pretrained=True)
 # data loader
 data_aug = DataAugmentation()
 aug = data_aug.load_aug_by_name()
@@ -74,6 +81,7 @@ def predict():
         flash('No file part')
         return redirect(request.url)
     file = request.files['file']
+    model_type = request.form.get('model_type')
 
     # if user does not select file, browser also submit an empty part without filename
     if file.filename == '':
@@ -87,9 +95,12 @@ def predict():
         file.save(filepath)
 
         # Predict
-        output_file, output_file_path = predict_image(filepath, filename)
-
-        return redirect(url_for('generated_file', filename=output_file))
+        if (model_type == 'unet'):
+            output_file, output_file_path = predict_image_unet(filepath, filename)
+            return redirect(url_for('generated_file', filename=output_file))
+        else:
+            output_file, output_file_path = predict_image(filepath, filename)
+            return redirect(url_for('generated_file', filename=output_file))
 
     # flash('Invalid')
     # return redirect('/')
@@ -122,8 +133,20 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def predict_image_unet(file_path, file_name):
+    print("unet prediction")
+    im=Image.open(file_path)
+    im=im.resize((128,128),Image.ANTIALIAS)
+    img=np.float32(np.array(im)/255.0)
+
+    # Reshape input and threshold output
+    out=unet.predict(img[:,:,0:3].reshape(1,128,128,3))
+    output_file_path = os.path.join(OUTPUT_FOLDER, file_name)
+    mpimg.imsave(output_file_path, out[0]*img)
+    return file_name, file_path
+
 def predict_image(file_path, file_name):
-    # img_origin = cv2.imread(file_path)
+    print("sinet prediction")
 
     # Get and preprocess image
     img_origin = val_datagen.load_image(file_path)
@@ -158,8 +181,7 @@ def predict_image(file_path, file_name):
     # Return value
     output_file_path = os.path.join(OUTPUT_FOLDER, file_name)
     cv2.imwrite(output_file_path, new_img)
-    return file_name, output_file_path
-
+    return file_name, file_path
 
 # ------------------ Main --------------------- #
 
