@@ -29,8 +29,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HOST = '0.0.0.0'
 PORT = 5000
 DEBUG = True
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
-OUTPUT_FOLDER = os.path.join(BASE_DIR, 'outputs')
+STATIC_FOLDER = os.path.join(BASE_DIR, 'static')
+UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploads')
+OUTPUT_FOLDER = os.path.join(STATIC_FOLDER, 'outputs')
+CSS_FOLDER = os.path.join(STATIC_FOLDER, 'css')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -44,13 +46,10 @@ CORS(app)
 IMG_HEIGHT = 224
 IMG_WIDTH = 224
 IMG_CHANNEL = 3
-CLASSES = ["Background", "Person"]
 DATA_DIR = os.path.join(BASE_DIR, 'Nukki')
 VAL_ANNO_FILE1 = os.path.join(DATA_DIR, "baidu_V1", "val.txt")
 VAL_ANNO_FILE2 = os.path.join(DATA_DIR, "baidu_V2", "val.txt")
 N_CLASSES = 2
-TEST_IMAGE_PATH = os.path.join(BASE_DIR, 'image_test', '1.png')
-OUTPUT_IMAGE_PATH = os.path.join(BASE_DIR, 'image_test', 'output.png')
 
 # Model
 WEIGHT_FILE_PATH = os.path.join(BASE_DIR, 'weights', 'best_weights_4_all.h5')
@@ -112,6 +111,11 @@ def generated_file(filename):
     return send_from_directory(OUTPUT_FOLDER, filename)
 
 
+@app.route('/css/<filename>')
+def css_file(filename):
+    return send_from_directory(CSS_FOLDER, filename)
+
+
 # ------------------ Helper functions --------------------- #
 
 def allowed_file(filename):
@@ -119,7 +123,7 @@ def allowed_file(filename):
 
 
 def predict_image(file_path, file_name):
-    img_origin = cv2.imread(file_path)
+    # img_origin = cv2.imread(file_path)
 
     # Get and preprocess image
     img_origin = val_datagen.load_image(file_path)
@@ -134,7 +138,6 @@ def predict_image(file_path, file_name):
     # Predict
     prediction = model.predict(img)
     prediction = prediction[0]
-    # print(prediction)
 
     # Mask
     mask = np.reshape(prediction, (IMG_HEIGHT, IMG_WIDTH, N_CLASSES))
@@ -142,25 +145,17 @@ def predict_image(file_path, file_name):
     mask[mask > 0] = 255
 
     new_img = np.copy(img_resize)
-    print(new_img.shape)
     non_zeros_idx = np.where(mask == 0)
-    #     non_zeros_idx = np.nonzero()
     new_img[..., 0][non_zeros_idx] = 0
     new_img[..., 1][non_zeros_idx] = 0
     new_img[..., 2][non_zeros_idx] = 0
-    new_img[np.all(new_img == (0, 0, 0), axis=-1)] = (244,118,0)
+    new_img[np.all(new_img == (0, 0, 0), axis=-1)] = (244, 118, 0)
 
-
-    #     print(mask)
-    #     for i in range(N_CLASSES):
-    #     class_idx = prediction.argmax(axis=-1)
-    mask = cv2.merge([mask, mask, mask])
-
-    img_resize = cv2.resize(img_resize, (512, 512))
+    # mask = cv2.merge([mask, mask, mask])
+    # img_resize = cv2.resize(img_resize, (512, 512))
     new_img = cv2.resize(new_img, (512, 512))
 
     # Return value
-    # cv2.imshow('', new_img)
     output_file_path = os.path.join(OUTPUT_FOLDER, file_name)
     cv2.imwrite(output_file_path, new_img)
     return file_name, output_file_path

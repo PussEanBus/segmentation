@@ -24,8 +24,8 @@ htmlcov/
 *,cover
 
 # Image upload and output
-uploads/*
-!uploads/.gitkeep
-outputs/*
-!outputs/.gitkeep
+static/uploads/*
+!static/uploads/.gitkeep
+static/outputs/*
+!static/outputs/.gitkeep
 
