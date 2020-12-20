@@ -18,9 +18,7 @@ from data_generator.datagenerator import DataGenerator
 from data_generator.dataaugentation import DataAugmentation
 from unet import get_mobile_unet
 from PIL import Image
-import scipy.misc
 import matplotlib.image as mpimg
-
 
 
 # ------------------ General config --------------------- #
@@ -80,27 +78,34 @@ def predict():
     if 'file' not in request.files:
         flash('No file part')
         return redirect(request.url)
+
     file = request.files['file']
     model_type = request.form.get('model_type')
+
+    # TODO: get color
 
     # if user does not select file, browser also submit an empty part without filename
     if file.filename == '':
         flash('No selected file')
         return redirect('/')
 
-    if file and allowed_file(file.filename):
+    if file and allowed_file(file.filename) and model_type:
         # Save uploaded file
-        filename = secure_filename(file.filename)
+        new_name = f'{model_type}_{file.filename}'
+        filename = secure_filename(new_name)
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
         # Predict
-        if (model_type == 'unet'):
+        if model_type == 'unet':
             output_file, output_file_path = predict_image_unet(filepath, filename)
-            return redirect(url_for('generated_file', filename=output_file))
         else:
             output_file, output_file_path = predict_image(filepath, filename)
-            return redirect(url_for('generated_file', filename=output_file))
+
+        input_url = url_for('uploaded_file', filename=filename)
+        output_url = url_for('generated_file', filename=output_file)
+        # return redirect(output_url)
+        return render_template('results.html', before=input_url, after=output_url)
 
     # flash('Invalid')
     # return redirect('/')
@@ -110,6 +115,11 @@ def predict():
 @app.route('/', methods=['GET'])
 def upload_file():
     return render_template('index.html')
+
+
+@app.route('/results', methods=['GET'])
+def show_results():
+    return render_template('results.html')
 
 
 @app.route('/uploads/<filename>')
@@ -135,15 +145,17 @@ def allowed_file(filename):
 
 def predict_image_unet(file_path, file_name):
     print("unet prediction")
-    im=Image.open(file_path)
-    im=im.resize((128,128),Image.ANTIALIAS)
-    img=np.float32(np.array(im)/255.0)
+
+    im = Image.open(file_path)
+    im = im.resize((128, 128), Image.ANTIALIAS)
+    img = np.float32(np.array(im) / 255.0)
 
     # Reshape input and threshold output
-    out=unet.predict(img[:,:,0:3].reshape(1,128,128,3))
+    out = unet.predict(img[:, :, 0:3].reshape(1, 128, 128, 3))
     output_file_path = os.path.join(OUTPUT_FOLDER, file_name)
-    mpimg.imsave(output_file_path, out[0]*img)
+    mpimg.imsave(output_file_path, out[0] * img)
     return file_name, file_path
+
 
 def predict_image(file_path, file_name):
     print("sinet prediction")
@@ -182,6 +194,7 @@ def predict_image(file_path, file_name):
     output_file_path = os.path.join(OUTPUT_FOLDER, file_name)
     cv2.imwrite(output_file_path, new_img)
     return file_name, file_path
+
 
 # ------------------ Main --------------------- #
 

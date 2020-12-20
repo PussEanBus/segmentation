@@ -55,6 +55,11 @@
 	<div class="center">
 		<div class="upload">
 			<form id="formElement" method=post enctype=multipart/form-data class="upload-files">
+				<label for="model_type">Choose a model:</label>
+				<select name="model_type" id="model_type">
+				  <option value="unet">UNet</option>
+				  <option value="sinet">SINet</option>
+				</select>
 				<header>
 					<p>
 						<i style="margin-left:-50px" class="fa fa-cloud-upload" aria-hidden="true"></i>
@@ -66,6 +71,7 @@
 					<i class="fa fa-file-text-o pointer-none" aria-hidden="true"></i>
 					<p class="pointer-none">
 						<b>Drag and drop</b> files here
+
 						<br /> or
 						<a href="" id="triggerFile">browse</a> to begin the upload
 					</p>
