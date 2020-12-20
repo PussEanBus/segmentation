@@ -35,11 +35,12 @@ h4{
     column-gap: 1.5em;
     font-size: .85em;
   display: flex;
-  padding: 0 150px;
+  justify-content: center;
 }
 .text{
   font-weight: bold;
-  color: #1D1E22;
+  color: #0f6159;
+  font-size: 20px;
 }
 .item {
     background: #fff;
@@ -51,8 +52,15 @@ h4{
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-shadow: 2px 2px 4px 0 #ccc;
+
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 .item img{max-width:100%;}
+.after{
+  padding: 0;
+}
 
 @media only screen and (max-width: 320px) {
     .masonry {
@@ -73,14 +81,16 @@ h4{
     .masonry {
         -moz-column-count: 3;
         -webkit-column-count: 3;
-        column-count: 3;
+        column-count: 3;  
     }
+    
 }
 @media only screen and (min-width: 1201px) {
     .masonry {
         -moz-column-count: 4;
         -webkit-column-count: 4;
         column-count: 4;
+        padding: 0 300px;
     }
 }
  body {
@@ -124,3 +134,23 @@ h4{
   justify-content: center;
   padding-bottom: 100px;
 }
+.buttonDownload{
+  font-weight: bold;
+  outline: none;
+    margin: auto;
+    border: solid 3px #4db6ac;
+      color: #4db6ac;
+      background: transparent;
+      padding: 8px 15px;
+    font-size: 12px;
+    border-radius: 4px;
+    font-family: Roboto;
+    line-height: 1;
+    cursor: pointer;
+    transform: translateY(15px);
+    margin-bottom: 30px;
+  /* margin-left: calc(50% - 40px); */
+}
+.buttonDownload:hover {
+  background: #4db6ac;
+  color: #fff; }

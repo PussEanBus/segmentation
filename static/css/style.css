@@ -21,14 +21,55 @@ body {
       background-position: 0% 50%;
     }
   }
-  h1 { color: #ffffff; font-family: 'Lato', sans-serif; font-size: 45px; font-weight: 300; line-height: 58px; margin: 0 0 58px; }
+  body {
+    background-color: white;
+    text-align: center;
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
+
+
+  }
+
+  .center {
+    display: flex;
+    justify-content: center;
+  }
+
+  .button {
+    background: linear-gradient(0deg, rgb(8, 59, 59) 6%, rgba(253, 45, 245, 1) 96%);
+    border: none;
+    display: flex;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .inner {
+    border: none;
+
+    text-decoration: none;
+    width: 240px;
+    height: 240px;
+    display: flex;
+    background-color: white;
+    border-radius: 50%;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+  h1 { color: #ffffff; font-family: 'Lato', sans-serif; font-size: 45px; font-weight: 300; line-height: 58px; margin: 0 0 20px; }
   p { color: #adb7bd; font-family: 'Lucida Sans', Arial, sans-serif; font-size: 26px; line-height: 26px; text-indent: 30px; margin: 0; }
 body {
 
-  margin-top: 150px;
+  margin-top: 100px;
   background-color: white;
       text-align: center;
       color: black;
+    }
+    .title{
+
     }
     .white{
       color: white;
@@ -50,7 +91,35 @@ body {
       justify-content: center;
       align-items: center;
     }
-
+    .colorInput{
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+    }
+    .foo {
+      float: left;
+      width: 20px;
+      height: 20px;
+      margin: 5px;
+      border: 1px solid black;
+    }
+    
+    .color1 {
+      background: #ffffff;
+    }
+    
+    .color2 {
+      background: #000000;
+    }
+    
+    .color3 {
+      background: #00627a;
+    }
+    .color4{
+      background: url("/images/transparent.png") no-repeat top left;
+   width: 100%;
+    }
     .inner {
       border: none;
 
@@ -66,25 +135,37 @@ body {
     }
     .submitBtn{
       outline: none;
-          left: 0;
-          right: 0;
-          bottom: 20px;
-          margin: auto;
-          border: solid 1px #4db6ac;
-          color: #4db6ac;
-          background: transparent;
-          padding: 8px 15px;
-          font-size: 12px;
-          border-radius: 4px;
-          font-family: Roboto;
-          line-height: 1;
-          cursor: pointer;
-          transform: translateY(15px);
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 20px;
+      margin: auto;
+      border: solid 1px #4db6ac;
+      color: #4db6ac;
+      background: transparent;
+      padding: 8px 15px;
+      font-size: 12px;
+      border-radius: 4px;
+      font-family: Roboto;
+      line-height: 1;
+      cursor: pointer;
+      transform: translateY(15px);
+      opacity: 0;
+      visibility: hidden;
+      margin-left: calc(50% - 40px);
     }
+    .submitBtn:hover {
+      background: #4db6ac;
+      color: #fff; }
+      .submitBtn.active {
+        transition: transform .5s 1.5s ease, opacity .5s 1.5s ease, background;
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible; }
 .upload {
   position: relative;
   width: 400px;
-  min-height: 445px;
+  min-height: 545px;
   box-sizing: border-box;
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -102,7 +183,7 @@ body {
       color: #fff;
       font-size: 40px;
       margin: 0;
-      padding: 50px 0; }
+      padding: 30px 0; }
       .upload .upload-files header p i {
         transform: translateY(20px);
         opacity: 0;
@@ -119,7 +200,7 @@ body {
       .upload .upload-files header p .load {
         display: inline-block;
         font-weight: 100;
-        margin-left: -35px;
+        margin-left: -40px;
         transform: translateX(-20px);
         opacity: 0;
         animation: faderight 1s 1.5s ease both; }
@@ -197,6 +278,7 @@ body {
       .upload .upload-files footer .list-files .file {
         width: 300px;
         min-height: 50px;
+        padding-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -274,7 +356,7 @@ body {
       position: absolute;
       left: 0;
       right: 0;
-      bottom: 20px;
+      bottom: 60px;
       margin: auto;
       border: solid 1px #4db6ac;
       color: #4db6ac;
@@ -315,3 +397,4 @@ body {
     .upload {
       width: 100%;
       height: 100%; } }
+      
