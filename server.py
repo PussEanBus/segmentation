@@ -81,8 +81,11 @@ def predict():
 
     file = request.files['file']
     model_type = request.form.get('model_type')
+    color = request.form.get('favcolor')
 
-    # TODO: get color
+    # Get RGB
+    h = color.lstrip('#')
+    rgb = tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
 
     # if user does not select file, browser also submit an empty part without filename
     if file.filename == '':
@@ -98,9 +101,9 @@ def predict():
 
         # Predict
         if model_type == 'unet':
-            output_file, output_file_path = predict_image_unet(filepath, filename)
+            output_file, output_file_path = predict_image_unet(filepath, filename, rgb)
         else:
-            output_file, output_file_path = predict_image(filepath, filename)
+            output_file, output_file_path = predict_image(filepath, filename, rgb)
 
         input_url = url_for('uploaded_file', filename=filename)
         output_url = url_for('generated_file', filename=output_file)
@@ -143,7 +146,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def predict_image_unet(file_path, file_name):
+def predict_image_unet(file_path, file_name, rgb):
     print("unet prediction")
 
     im = Image.open(file_path)
@@ -152,12 +155,15 @@ def predict_image_unet(file_path, file_name):
 
     # Reshape input and threshold output
     out = unet.predict(img[:, :, 0:3].reshape(1, 128, 128, 3))
+
+    img_out = out[0] * img
+
     output_file_path = os.path.join(OUTPUT_FOLDER, file_name)
-    mpimg.imsave(output_file_path, out[0] * img)
+    mpimg.imsave(output_file_path, img_out)
     return file_name, file_path
 
 
-def predict_image(file_path, file_name):
+def predict_image(file_path, file_name, rgb):
     print("sinet prediction")
 
     # Get and preprocess image
@@ -184,7 +190,7 @@ def predict_image(file_path, file_name):
     new_img[..., 0][non_zeros_idx] = 0
     new_img[..., 1][non_zeros_idx] = 0
     new_img[..., 2][non_zeros_idx] = 0
-    new_img[np.all(new_img == (0, 0, 0), axis=-1)] = (244, 118, 0)
+    new_img[np.all(new_img == (0, 0, 0), axis=-1)] = (rgb[0], rgb[1], rgb[2])
 
     # mask = cv2.merge([mask, mask, mask])
     # img_resize = cv2.resize(img_resize, (512, 512))
