@@ -1,5 +1,6 @@
 import os
 import warnings
+from datetime import datetime
 
 # ------------------ Flask --------------------- #
 
@@ -12,7 +13,6 @@ from werkzeug.utils import secure_filename
 
 from model import SiNet
 import numpy as np
-import keras.backend as K
 import cv2
 from data_generator.datagenerator import DataGenerator
 from data_generator.dataaugentation import DataAugmentation
@@ -25,6 +25,12 @@ import matplotlib.image as mpimg
 
 warnings.filterwarnings("ignore")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_FOLDER = os.path.join(BASE_DIR, 'static')
+UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploads')
+OUTPUT_FOLDER = os.path.join(STATIC_FOLDER, 'outputs')
+CSS_FOLDER = os.path.join(STATIC_FOLDER, 'css')
+JS_FOLDER = os.path.join(STATIC_FOLDER, 'js')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 
 # ------------------ Flask config --------------------- #
@@ -32,12 +38,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HOST = '0.0.0.0'
 PORT = 5000
 DEBUG = True
-STATIC_FOLDER = os.path.join(BASE_DIR, 'static')
-UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploads')
-OUTPUT_FOLDER = os.path.join(STATIC_FOLDER, 'outputs')
-CSS_FOLDER = os.path.join(STATIC_FOLDER, 'css')
-JS_FOLDER = os.path.join(STATIC_FOLDER, 'js')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
@@ -50,22 +50,25 @@ CORS(app)
 IMG_HEIGHT = 224
 IMG_WIDTH = 224
 IMG_CHANNEL = 3
-DATA_DIR = os.path.join(BASE_DIR, 'Nukki')
-VAL_ANNO_FILE1 = os.path.join(DATA_DIR, "baidu_V1", "val.txt")
-VAL_ANNO_FILE2 = os.path.join(DATA_DIR, "baidu_V2", "val.txt")
 N_CLASSES = 2
 
-# Model
+# Used for applying mask to original image
+BASE_HEIGHT = 400
+BASE_WIDTH = 400
+
+# Model SiNet
 WEIGHT_FILE_PATH = os.path.join(BASE_DIR, 'weights', 'best_weights_4_all.h5')
-IMAGE_DATA_FORMAT = K.image_data_format()
-K.clear_session()
 sinet = SiNet(IMG_HEIGHT, IMG_WIDTH, IMG_CHANNEL, N_CLASSES)
 model = sinet.build_decoder()
 model.load_weights(WEIGHT_FILE_PATH)
 
-# unet
+# UNet
 unet = get_mobile_unet(pretrained=True)
+
 # data loader
+DATA_DIR = os.path.join(BASE_DIR, 'Nukki')
+VAL_ANNO_FILE1 = os.path.join(DATA_DIR, "baidu_V1", "val.txt")
+VAL_ANNO_FILE2 = os.path.join(DATA_DIR, "baidu_V2", "val.txt")
 data_aug = DataAugmentation()
 aug = data_aug.load_aug_by_name()
 val_datagen = DataGenerator(DATA_DIR, [VAL_ANNO_FILE1, VAL_ANNO_FILE2], aug, batch_size=24)
@@ -95,25 +98,24 @@ def predict():
 
     if file and allowed_file(file.filename) and model_type:
         # Save uploaded file
-        new_name = f'{model_type}_{file.filename}'
+        new_name = f'{int(datetime.now().timestamp())}_{model_type}_{file.filename}'
+        print(new_name)
         filename = secure_filename(new_name)
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
         # Predict
         if model_type == 'unet':
-            output_file, output_file_path = predict_image_unet(filepath, filename, rgb)
+            output_file = predict_image_unet(filepath, filename, rgb)
         else:
-            output_file, output_file_path = predict_image(filepath, filename, rgb)
+            output_file = predict_image(filepath, filename, rgb)
 
         input_url = url_for('uploaded_file', filename=filename)
         output_url = url_for('generated_file', filename=output_file)
-        # return redirect(output_url)
         return render_template('results.html', before=input_url, after=output_url)
 
-    # flash('Invalid')
-    # return redirect('/')
-    return 'Invalid request', 400
+    flash('Invalid')
+    return redirect('/')
 
 
 @app.route('/', methods=['GET'])
@@ -161,12 +163,22 @@ def predict_image_unet(file_path, file_name, rgb):
 
     # Reshape input and threshold output
     out = unet.predict(img[:, :, 0:3].reshape(1, 128, 128, 3))
+    img_out = img
+    mask = np.uint(out[0] * 255)
 
-    img_out = out[0] * img
+    for row_ix, row in enumerate(mask):
+        for col_ix, col in enumerate(row):
+            if col[0] == 0:
+                img_out[row_ix][col_ix][0] = rgb[0] / 255.0
+                img_out[row_ix][col_ix][1] = rgb[1] / 255.0
+                img_out[row_ix][col_ix][2] = rgb[2] / 255.0
+
+    # img_out = img * out[0]
 
     output_file_path = os.path.join(OUTPUT_FOLDER, file_name)
     mpimg.imsave(output_file_path, img_out)
-    return file_name, file_path
+
+    return file_name
 
 
 def predict_image(file_path, file_name, rgb):
@@ -176,7 +188,7 @@ def predict_image(file_path, file_name, rgb):
     img_origin = val_datagen.load_image(file_path)
     preprocessors = [val_datagen.resize_img, val_datagen.mean_substraction]
 
-    img_resize = cv2.resize(img_origin, (224, 224))[..., ::-1]
+    img_resize = cv2.resize(img_origin, (IMG_HEIGHT, IMG_WIDTH))[..., ::-1]
     img_preprocess = val_datagen.preprocessing(img_origin, preprocessors=preprocessors)
 
     img = np.expand_dims(img_preprocess, axis=0)
@@ -205,7 +217,8 @@ def predict_image(file_path, file_name, rgb):
     # Return value
     output_file_path = os.path.join(OUTPUT_FOLDER, file_name)
     cv2.imwrite(output_file_path, new_img)
-    return file_name, file_path
+
+    return file_name
 
 
 # ------------------ Main --------------------- #

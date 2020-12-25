@@ -27,18 +27,21 @@
   <a href="/" class="returnBtn">Return</a>
 </div>
 <script>
-  setTimeout(() => {
-    var beforeImg = document.getElementById("before")
-    // beforeImg.src = ""
-    if (before) {
-      var width = document.getElementById("before").width
-      var height = document.getElementById("before").height
-      console.log(width, height)
+    function scaleImg() {
+        var beforeImg = document.getElementById("before")
+        // beforeImg.src = ""
+        if (beforeImg) {
+          var width = document.getElementById("before").width
+          var height = document.getElementById("before").height
+        }
+        var afterImg = document.getElementById('after');
+        if (afterImg && afterImg.style && width && height) {
+          afterImg.style.height = height;
+          afterImg.style.width = width;
+        } else {
+            setTimeout(scaleImg, 100)
+        }
     }
-    var afterImg = document.getElementById('after');
-    if (afterImg && afterImg.style) {
-      afterImg.style.height = height;
-      afterImg.style.width = width;
-    }
-  }, 3000)
+
+    setTimeout(scaleImg, 100)
 </script>
