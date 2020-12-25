@@ -36,6 +36,7 @@ STATIC_FOLDER = os.path.join(BASE_DIR, 'static')
 UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploads')
 OUTPUT_FOLDER = os.path.join(STATIC_FOLDER, 'outputs')
 CSS_FOLDER = os.path.join(STATIC_FOLDER, 'css')
+JS_FOLDER = os.path.join(STATIC_FOLDER, 'js')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -138,6 +139,11 @@ def generated_file(filename):
 @app.route('/css/<filename>')
 def css_file(filename):
     return send_from_directory(CSS_FOLDER, filename)
+
+
+@app.route('/js/<filename>')
+def js_file(filename):
+    return send_from_directory(JS_FOLDER, filename)
 
 
 # ------------------ Helper functions --------------------- #
