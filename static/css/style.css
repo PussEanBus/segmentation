@@ -33,6 +33,8 @@ body {
   .center {
     display: flex;
     justify-content: center;
+
+padding-bottom: 100px;
   }
 
   .button {
@@ -59,8 +61,8 @@ body {
     justify-content: center;
     align-items: center;
   }
-  h1 { color: #ffffff; font-family: 'Lato', sans-serif; font-size: 45px; font-weight: 300; line-height: 58px; margin: 0 0 20px; }
-  p { color: #adb7bd; font-family: 'Lucida Sans', Arial, sans-serif; font-size: 26px; line-height: 26px; text-indent: 30px; margin: 0; }
+  h1 { color: #ffffff; font-family: Arial, Helvetica, sans-serif; font-size: 45px; font-weight: 300; line-height: 58px; margin: 0 0 20px; }
+  p { color: #adb7bd; font-family: Arial, Helvetica, sans-serif; font-size: 26px; line-height: 26px; text-indent: 30px; margin: 0; }
 body {
 
   margin-top: 100px;
@@ -114,7 +116,7 @@ body {
     }
     
     .color3 {
-      background: #00627a;
+      background: #3a8ba0;
     }
     .color4{
       background: url("/images/transparent.png") no-repeat top left;
@@ -140,19 +142,18 @@ body {
       right: 0;
       bottom: 20px;
       margin: auto;
-      border: solid 1px #4db6ac;
+      border: solid 1px #36a398;
       color: #4db6ac;
       background: transparent;
       padding: 8px 15px;
-      font-size: 12px;
+      font-size: 16px;
       border-radius: 4px;
-      font-family: Roboto;
+      font-family: Arial, Helvetica, sans-serif;
       line-height: 1;
       cursor: pointer;
       transform: translateY(15px);
       opacity: 0;
       visibility: hidden;
-      margin-left: calc(50% - 40px);
     }
     .submitBtn:hover {
       background: #4db6ac;
@@ -316,7 +317,6 @@ body {
           transform: scale(0);
           position: relative; }
           .upload .upload-files footer .list-files .file .done:before {
-            content: "View";
             position: absolute;
             top: 0;
             left: -5px;
@@ -362,15 +362,14 @@ body {
       color: #4db6ac;
       background: transparent;
       padding: 8px 15px;
-      font-size: 12px;
+      font-size: 16px;
       border-radius: 4px;
-      font-family: Roboto;
+      font-family: Arial, Helvetica, sans-serif;
       line-height: 1;
       cursor: pointer;
       transform: translateY(15px);
       opacity: 0;
-      visibility: hidden;
-      margin-left: calc(50% - 40px); }
+      visibility: hidden;}
       .upload .upload-files footer .importar.active {
         transition: transform .5s 1.5s ease, opacity .5s 1.5s ease, background;
         transform: translateY(0);
@@ -397,4 +396,9 @@ body {
     .upload {
       width: 100%;
       height: 100%; } }
-      
+      footer{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
