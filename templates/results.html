@@ -6,30 +6,32 @@
 <div class="masonry">
   <div class="item">
     <div class="text">Before</div>
-    <img id="before"
-      src="https://bostonglobe-prod.cdn.arcpublishing.com/resizer/zLzhbmewvnzs1g2LIGoMn7gH6Lc=/1440x0/arc-anglerfish-arc2-prod-bostonglobe.s3.amazonaws.com/public/3OI757W6NUI6FC3DMB6UBJQQ2Y.jpg">
-    <!-- {{ before }} {{ after }}-->
+    <img id="before" src="{{before}}">
   </div>
   <div class="item">
     <div class="text">After</div>
-    <img id="after"
-      src="https://pyxis.nymag.com/v1/imgs/c0e/e11/db0a8c0a8bce7a25d0744ed190f5058098-johnny-depp.rsquare.w1200.jpg">
+    <img id="after" src="{{after}}">
   </div>
 </div>
 <div class="center">
   <a href="/" class="returnBtn">Return</a>
 </div>
 <script>
-  var beforeImg = document.getElementById("before")
-  // beforeImg.src = ""
-  if (before) {
-    var width = document.getElementById("before").width
-    var height = document.getElementById("before").height
-    console.log(width, height)
+  function scaleImg() {
+    var beforeImg = document.getElementById("before")
+    // beforeImg.src = ""
+    if (beforeImg) {
+      var width = document.getElementById("before").width
+      var height = document.getElementById("before").height
+    }
+    var afterImg = document.getElementById('after');
+    if (afterImg && afterImg.style && width && height) {
+      afterImg.style.height = height;
+      afterImg.style.width = width;
+    } else {
+      setTimeout(scaleImg, 100)
+    }
   }
-  var afterImg = document.getElementById('after');
-  if (afterImg && afterImg.style) {
-    afterImg.style.height = height;
-    afterImg.style.width = width;
-  }
+
+  setTimeout(scaleImg, 100)
 </script>

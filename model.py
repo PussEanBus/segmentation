@@ -237,8 +237,7 @@ class SiNet:
     def build_decoder(self):
         inputs, x, x8, x5, x1 = self.build_encoder()
         
-        x = UpSampling2D((2, 2), data_format=IMAGE_DATA_FORMAT, 
-                         interpolation="bilinear")(x)
+        x = UpSampling2D((2, 2), data_format=IMAGE_DATA_FORMAT, interpolation="bilinear")(x)
         x = BatchNormalization(axis=self.channel_axis)(x)
         x_ac = Activation("softmax")(x)
         
