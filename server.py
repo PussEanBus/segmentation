@@ -212,7 +212,7 @@ def predict_image(file_path, file_name, rgb):
 
     # mask = cv2.merge([mask, mask, mask])
     # img_resize = cv2.resize(img_resize, (512, 512))
-    new_img = cv2.resize(new_img, (512, 512))
+    new_img = cv2.resize(new_img, (4096, 4096))
 
     # Return value
     output_file_path = os.path.join(OUTPUT_FOLDER, file_name)
