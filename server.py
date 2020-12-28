@@ -85,11 +85,13 @@ def predict():
 
     file = request.files['file']
     model_type = request.form.get('model_type')
-    color = request.form.get('favcolor')
+    color = request.form.get('backgrColor', '#000000')
+    print(color)
 
     # Get RGB
     h = color.lstrip('#')
     rgb = tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+    print(rgb)
 
     # if user does not select file, browser also submit an empty part without filename
     if file.filename == '':
@@ -99,7 +101,6 @@ def predict():
     if file and allowed_file(file.filename) and model_type:
         # Save uploaded file
         new_name = f'{int(datetime.now().timestamp())}_{model_type}_{file.filename}'
-        print(new_name)
         filename = secure_filename(new_name)
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
@@ -208,7 +209,7 @@ def predict_image(file_path, file_name, rgb):
     new_img[..., 0][non_zeros_idx] = 0
     new_img[..., 1][non_zeros_idx] = 0
     new_img[..., 2][non_zeros_idx] = 0
-    new_img[np.all(new_img == (0, 0, 0), axis=-1)] = (rgb[0], rgb[1], rgb[2])
+    new_img[np.all(new_img == (0, 0, 0), axis=-1)] = (rgb[2], rgb[1], rgb[0])
 
     # mask = cv2.merge([mask, mask, mask])
     # img_resize = cv2.resize(img_resize, (512, 512))
