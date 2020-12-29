@@ -9,7 +9,7 @@ from keras.models import load_model
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 WEIGHTS_DIR = os.path.join(BASE_DIR, 'weights')
-PRETRAINED = os.path.join(WEIGHTS_DIR, 'up_super_model-102-0.06.hdf5')
+PRETRAINED = os.path.join(WEIGHTS_DIR, 'train.hdf5')
 
 
 # Convolution block with Transpose Convolution

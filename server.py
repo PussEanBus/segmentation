@@ -1,5 +1,6 @@
 import os
 import warnings
+import math
 from datetime import datetime
 
 # ------------------ Flask --------------------- #
@@ -86,12 +87,10 @@ def predict():
     file = request.files['file']
     model_type = request.form.get('model_type')
     color = request.form.get('backgrColor', '#000000')
-    print(color)
 
     # Get RGB
     h = color.lstrip('#')
     rgb = tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
-    print(rgb)
 
     # if user does not select file, browser also submit an empty part without filename
     if file.filename == '':
@@ -164,6 +163,7 @@ def predict_image_unet(file_path, file_name, rgb):
 
     # Reshape input and threshold output
     out = unet.predict(img[:, :, 0:3].reshape(1, 128, 128, 3))
+    out = np.float32((out > 0.5))
     img_out = img
     mask = np.uint(out[0] * 255)
 
