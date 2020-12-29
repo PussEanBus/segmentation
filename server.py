@@ -165,7 +165,7 @@ def predict_image_unet(file_path, file_name, rgb):
     out = unet.predict(img[:, :, 0:3].reshape(1, 128, 128, 3))
     out = np.float32((out > 0.5))
     img_out = img
-    mask = np.uint(out[0] * 255)
+    mask = out[0]
 
     for row_ix, row in enumerate(mask):
         for col_ix, col in enumerate(row):
@@ -202,7 +202,8 @@ def predict_image(file_path, file_name, rgb):
     # Mask
     mask = np.reshape(prediction, (IMG_HEIGHT, IMG_WIDTH, N_CLASSES))
     mask = np.argmax(mask, axis=-1)
-    mask[mask > 0] = 255
+
+    # mask[mask > 0] = 255
 
     new_img = np.copy(img_resize)
     non_zeros_idx = np.where(mask == 0)
