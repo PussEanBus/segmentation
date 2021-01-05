@@ -26,7 +26,7 @@
 					<p class="pointer-none">
 						<b>Drag and drop</b> files here
 						<br /> or
-						<a href="" id="triggerFile">browse</a> to begin the upload
+						<a href="" id="triggerFile">Browse</a> to begin the upload
 					</p>
 					<input type="file" name="file" multiple="multiple" />
 				</div>
@@ -197,6 +197,7 @@
 					}, load);
 				});
 				evt.preventDefault();
+				$("input[type=file]").click();
 			};
 
 			//upload more
@@ -204,7 +205,7 @@
 				$(".list-files").innerHTML = "";
 				$("footer").classList.remove("hasFiles");
 				$(".importar").classList.remove("active");
-        			$(".submitBtn").classList.remove("active");
+				$(".submitBtn").classList.remove("active");
 				setTimeout(() => {
 					$("#drop").classList.remove("hidden");
 				}, 500);
@@ -216,7 +217,6 @@
 		})();
 		function triggerClick() {
 
-			console.log(document.getElementsByName("backgrColor").value)
 			if (document.getElementById("color1").checked) {
 				document.getElementById("favcolor").value = "#ffffff"
 			}
@@ -226,10 +226,6 @@
 			if (document.getElementById("color3").checked) {
 				document.getElementById("favcolor").value = "#3a8ba0"
 			}
-			// console.log(document.getElementById("color1").value)
-			// console.log(document.getElementById("color2").value)
-			// console.log(document.getElementById("color3").value)
-
 		}
 		function triggerPicker() {
 			document.getElementById("color1").checked = false;
